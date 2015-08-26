@@ -7,7 +7,7 @@ use hyper::server::request::Request as HttpRequest;
 use hyper::server::response::Response as HttpResponse;
 use std::io::Read;
 
-struct XmlrpcServer {
+pub struct XmlrpcServer {
     addr: Option<SocketAddr>
 }
 
@@ -32,14 +32,12 @@ impl XmlrpcServer {
 }
 
 impl ::hyper::server::Handler for XmlrpcServer {
-    fn handle(&self, http_req: HttpRequest, http_res: HttpResponse<Fresh>) {
-        // let mut req_str = String::new();
-        // match http_req.read_to_string(&mut req_str) {
-        //     Ok(s) => println!("Request: {}", req_str),
-        //     Err(_) => panic!("Cannot convert to string.")
-        // }
-
-        println!("Header: {}", http_req.remote_addr);
+    fn handle(&self, mut http_req: HttpRequest, http_res: HttpResponse<Fresh>) {
+        let mut req_str = String::new();
+        match http_req.read_to_string(&mut req_str) {
+            Ok(_) => println!("Request: {}", req_str),
+            Err(_) => panic!("Cannot convert to string.")
+        }
     }
 }
 
@@ -50,7 +48,6 @@ mod test {
     #[test]
     fn test_serve() {
         let xmlrpc = XmlrpcServer::new();
-        xmlrpc.serve("localhost:3000", 2).unwrap();
-        loop{};
+        //xmlrpc.serve("localhost:3000", 2).unwrap();
     }
 }

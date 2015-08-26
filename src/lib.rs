@@ -1,3 +1,8 @@
-extern crate hyper;
+#[allow(unused_variables)]
 
-mod server;
+extern crate hyper;
+extern crate xml;
+
+pub mod server;
+#[allow(dead_code)]
+mod xml_parser;
