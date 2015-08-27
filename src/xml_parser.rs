@@ -11,6 +11,7 @@ enum XmlParserState {
 
 pub struct XmlRequest<'a> {
     method_name: Cow<'a, str>,
+    params: Vec<i32>
 }
 
 impl<'a> XmlRequest<'a> {
@@ -57,6 +58,7 @@ impl<'a> XmlRequest<'a> {
                     match parser.next() {
                         XmlEvent::Characters(text) => {
                             println!("Param i4: {}", text);
+                            self.params.push(text.parse::<i32>().unwrap());
                             XmlParserState::Idle
                         }
                         _ => XmlParserState::Idle
@@ -85,8 +87,10 @@ mod test {
             </param>\n\
           </params>\n\
         </methodCall>\n";
-        let mut xml_request_parser = XmlRequest { method_name: Cow::Borrowed("")};
+        let mut xml_request_parser = XmlRequest {
+            method_name: Cow::Borrowed(""), params: Vec::new()};
         xml_request_parser.parse_xmlrpc_request(request_str);
         assert_eq!(xml_request_parser.method_name, "life");
+        assert_eq!(xml_request_parser.params, [42]);
     }
 }
