@@ -27,7 +27,6 @@ impl<'a> XmlRequest<'a> {
                         XmlEvent::StartElement { name, .. } => {
                             match name.local_name.as_ref() {
                                 "methodName" => {
-                                    self.method_name = Cow::Owned(name.local_name);
                                     XmlParserState::MethodName
                                 }
                                 "i4" => XmlParserState::Parami4,
@@ -46,7 +45,7 @@ impl<'a> XmlRequest<'a> {
                     match parser.next() {
                         XmlEvent::Characters(text) => {
                             println!("Method name characters: {}", text);
-                            //self.method_name = text;
+                            self.method_name = Cow::Owned(text);
                             XmlParserState::MethodName
                         },
                         _ => {
