@@ -17,7 +17,7 @@ mod test {
 
     #[test]
     fn test_request() {
-        execute_request();
+        //execute_request();
         println!("Request excetuted");
         assert_eq!(1, 1);
     }

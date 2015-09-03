@@ -48,6 +48,6 @@ mod test {
     #[test]
     fn test_serve() {
         let xmlrpc = XmlrpcServer::new();
-        xmlrpc.serve("localhost:3000", 2).unwrap();
+        //xmlrpc.serve("localhost:3000", 2).unwrap();
     }
 }
