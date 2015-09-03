@@ -6,7 +6,7 @@ use std::borrow::Cow;
 #[derive(Debug, PartialEq)]
 pub enum XmlParam {
     Integer(i32),
-    Double(i32),
+    Double(f64),
     XmlString(String),
     Boolean(bool),
     Array(Vec<XmlParam>)
@@ -16,7 +16,10 @@ pub enum XmlParam {
 enum XmlParserState {
     Idle,
     MethodName,
-    ParamInt
+    ParamInt,
+    ParamBoolean,
+    ParamFloat,
+    ParamString
 }
 
 pub struct XmlRequest<'a> {
@@ -45,6 +48,9 @@ impl<'a> XmlRequest<'a> {
                                     XmlParserState::MethodName
                                 }
                                 "i4" | "int" => XmlParserState::ParamInt,
+                                "boolean" => XmlParserState::ParamBoolean,
+                                "double" => XmlParserState::ParamFloat,
+                                "string" => XmlParserState::ParamString,
                                 //TODO: handle all opening tags
                                 _ => XmlParserState::Idle
                             }
@@ -77,6 +83,40 @@ impl<'a> XmlRequest<'a> {
                         }
                         _ => XmlParserState::Idle
                     }
+                },
+                XmlParserState::ParamString => {
+                    match parser.next() {
+                        XmlEvent::Characters(text) => {
+                            println!("Param String: {}", text);
+                            self.params.push(XmlParam::XmlString(text));
+                            XmlParserState::Idle
+                        }
+                        _ => XmlParserState::Idle
+                    }
+                },
+                XmlParserState::ParamBoolean => {
+                    match parser.next() {
+                        XmlEvent::Characters(text) => {
+                            println!("Param Boolean: {}", text);
+                            if text == "1" {
+                                self.params.push(XmlParam::Boolean(true));
+                            } else {
+                                self.params.push(XmlParam::Boolean(false));
+                            }
+                            XmlParserState::Idle
+                        }
+                        _ => XmlParserState::Idle
+                    }
+                },
+                XmlParserState::ParamFloat => {
+                    match parser.next() {
+                        XmlEvent::Characters(text) => {
+                            println!("Param float: {}", text);
+                            self.params.push(XmlParam::Double(text.parse::<f64>().unwrap()));
+                            XmlParserState::Idle
+                        }
+                        _ => XmlParserState::Idle
+                    }
                 }
             }
         }
@@ -99,11 +139,21 @@ mod test {
             <param>\n\
               <value><i4>42</i4></value>\n\
             </param>\n\
+            <param>\n\
+              <value><double>3.14</double></value>\n\
+            </param>\n\
+            <param>\n\
+              <value><boolean>1</boolean></value>\n\
+            </param>\n\
+            <param>\n\
+              <value><string>hola</string></value>\n\
+            </param>\n\
           </params>\n\
         </methodCall>\n";
         let mut xml_request_parser = XmlRequest::new();
         xml_request_parser.parse_xmlrpc_request(request_str);
         assert_eq!(xml_request_parser.method_name, "life");
-        assert_eq!(xml_request_parser.params, [XmlParam::Integer(42)]);
+        assert_eq!(xml_request_parser.params, [XmlParam::Integer(42), XmlParam::Double(3.14),
+                                               XmlParam::Boolean(true), XmlParam::XmlString("hola".to_string())]);
     }
 }
